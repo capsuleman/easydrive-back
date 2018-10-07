@@ -1,0 +1,21 @@
+{
+  "name": "easydrive-back",
+  "version": "1.0.0",
+  "description": "EasyDrive API",
+  "scripts": {
+    "start": "node ./bin/www"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.viarezo.fr:EasyDrive/easydrive-back.git"
+  },
+  "dependencies": {
+    "cookie-parser": "~1.4.3",
+    "debug": "~2.6.9",
+    "ejs": "~2.5.7",
+    "express": "~4.16.0",
+    "http-errors": "~1.6.2",
+    "mongoose": "^5.3.1",
+    "morgan": "~1.9.0"
+  }
+}
