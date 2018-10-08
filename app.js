@@ -6,7 +6,11 @@ var logger = require('morgan');
 var mongoose = require('mongoose');
 
 var indexRouter = require('./routes/index');
+<<<<<<< HEAD
 var pushRouter = require('./routes/push');
+=======
+var usersRouter = require('./routes/users');
+>>>>>>> 1868b969b31524618c986b64397002e04f625627
 
 var app = express();
 
@@ -21,7 +25,11 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
+<<<<<<< HEAD
 app.use('/push', pushRouter);
+=======
+app.use('/users', usersRouter);
+>>>>>>> 1868b969b31524618c986b64397002e04f625627
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
