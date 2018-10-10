@@ -34,7 +34,6 @@ router.get('/:type', function(req, res, next) {
     if (req.headers['keyhead'] == config.cred.getmdp) {
         Data.find({type: req.params.type}, function (err, data) {
             if (err) return next(err);
-            console.log(req);
             res.json(data);
         });
     } else {

@@ -7,20 +7,13 @@
 var app = require('../app');
 var debug = require('debug')('easydrive-back:server');
 var http = require('http');
-<<<<<<< HEAD
 var config = require('../config');
-=======
->>>>>>> 1868b969b31524618c986b64397002e04f625627
 
 /**
  * Get port from environment and store in Express.
  */
 
-<<<<<<< HEAD
 var port = normalizePort(config.web.port);
-=======
-var port = normalizePort(process.env.PORT || '80');
->>>>>>> 1868b969b31524618c986b64397002e04f625627
 app.set('port', port);
 
 /**
