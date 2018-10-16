@@ -1,9 +1,16 @@
 # Back of EasyDrive Project
+
+![EasyDrive RESTful API with Node.js](http://finance-technologie.fr/wp-content/uploads/2018/04/EASYDRIVE.png "EasyDrive RESTful API with Node.js")
+
 Back of EasyDrive Project, coded with ExpressJS  
-Usable road :  
-* POST `/push` to post data  
-* GET `/push` to get all the data  
-* GET `/push/:type` to get data of type `type` (join, uplink, downlink)  
+## Usable road :  
+* POST `/push` to post data (require apikey)
+* GET `/push` to get all the data
+* GET `/push/:type` to get data of type `type` (join, uplink, downlink)
+* POST `auth/register` with `firstName`, `lastName`, `email` and `password` to get an account and get JWT in response
+* POST `auth/login` with `email` and `password` to get JWT
+* GET `auth/me` with JWT to get user data 
+
 
 ## Installation
 Required package:
