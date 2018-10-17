@@ -23,6 +23,7 @@ router.post('/register', function (req, res) {
             lastName: req.body.lastName,
             email: req.body.email,
             password: hashedPassword,
+            admin: false,
             listGroupUsers: [],
             listRide: []
         },
@@ -34,7 +35,7 @@ router.post('/register', function (req, res) {
                     expiresIn: 86400 // expires in 24 hours
                 });
     
-                res.status(200).send({ auth: true, token: token });
+                res.status(201).send({ auth: true, token: token });
             });
     
     });
@@ -70,6 +71,47 @@ router.post('/login', function (req, res) {
         res.status(200).send({ auth: true, token: token });
     });
 
+});
+
+
+router.post('/setadmin', VerifyToken, function(req, res, next) {
+    if (!req.body.email) return res.status(418).send('Not email provided.');
+    console.log(req.userId);
+    User.findById(req.userId, function(err, user) {
+        if (!user) return res.status(401).render('resp', { message: '401 Unauthorized' });
+        if (user.admin) {
+            User.findOne({email: req.body.email}, function (err, newadmin) {
+                if (err) return res.status(500).send('500 Internal error.');
+                newadmin.admin = true;
+                User.findOneAndUpdate({_id: newadmin._id}, newadmin, function(err, data) {
+                    if (err) return res.status(500).send('500 Internal error.');
+                    res.status(200).render('resp', { message: '200 Ok' });
+                });
+            });
+        } else {
+            res.status(401).render('resp', { message: '401 Unauthorized' });
+        };    
+    });
+});
+
+router.post('/deladmin', VerifyToken, function(req, res, next) {
+    if (!req.body.email) return res.status(418).send('Not email provided.');
+    User.findById(req.userId, function(err, user) {
+        if (!user) return res.status(401).render('resp', { message: '401 Unauthorized' });
+        if (user.admin) {
+            User.findOne({email: req.body.email}, function (err, oldadmin) {
+                if (err) return res.status(500).send('500 Internal error.');
+                if (req.userId == oldadmin._id) return res.status(418).render('resp', { message : '418 You can not delete your admin rights.'});
+                oldadmin.admin = false;
+                User.findOneAndUpdate({_id: oldadmin._id}, oldadmin, function(err, data) {
+                    if (err) return res.status(500).send('500 Internal error.');
+                    res.status(200).render('resp', { message: '200 Ok' });
+                });
+            });
+        } else {
+            res.status(401).render('resp', { message: '401 Unauthorized' });
+        };    
+    });
 });
 
 module.exports = router;

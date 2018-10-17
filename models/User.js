@@ -2,7 +2,7 @@ var mongoose = require('mongoose');
 var UserSchema = new mongoose.Schema({  
   firstName: {
     type: String,
-    required: [true, 'Why no bacon?'],
+    required: true,
     maxlength: 36
   },
   lastName: {
@@ -22,8 +22,10 @@ var UserSchema = new mongoose.Schema({
     required: true,
     minlength: 8
   },
+  admin: Boolean,
   listGroupUsers: [String],
   listRide: [String]
+  
 });
 mongoose.model('User', UserSchema);
 

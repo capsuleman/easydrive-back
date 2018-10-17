@@ -55,17 +55,22 @@ var config = {};
 
 config.web = {};
 config.cred = {};
+config.db = {};
 
 config.cred.keyhead = '';
-config.cred.getmdp = '';
+config.cred.authsecret = '';
+
 config.web.port = process.env.WEB_PORT || XXXX;
+
+config.db.uri = '';
 
 module.exports = config;
 ```
 
-`config.cred.keyhead` correspond to the value from `keyhead` header from Objenious API.  
-`config.cred.getmdp` is the password to access to `GET /push`.  
-`XXXX` correspond to port used for ExpressJS.  
+`config.cred.keyhead` corresponds to the value from `keyhead` header from Objenious API.  
+`config.cred.authsecret` is the secret for JSON Web Token.  
+`XXXX` corresponds to port used for ExpressJS.  
+`config.db.uri` corresponds to the uri tu MongoDB.  
 
 ### Creation of HTTPS certificate and key
 Install [certbot](https://certbot.eff.org/all-instructions).  

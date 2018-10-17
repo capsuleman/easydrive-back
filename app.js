@@ -5,6 +5,8 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var mongoose = require('mongoose');
 
+var config = require('./config');
+
 var indexRouter = require('./routes/index');
 var pushRouter = require('./routes/push');
 var authRouter = require('./routes/auth');
@@ -43,7 +45,7 @@ app.use(function(err, req, res, next) {
 
 // mongodb connection
 mongoose.Promise = global.Promise;
-mongoose.connect("mongodb://localhost:27017/easyDB", { useNewUrlParser: true })
+mongoose.connect(config.db.uri, { useNewUrlParser: true })
   .then(() =>  console.log('connection succesful'))
   .catch((err) => console.error(err));
 
