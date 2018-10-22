@@ -12,27 +12,29 @@ var VerifyToken = require('../middleware/VerifyToken');
 // GET ALL USERSGROUPS
 // Access only granted to admin team.
 router.get('/', VerifyToken, function(req, res, next) {
-    User.findById(req.userId, function(err, user) {
+    User.findById(req.userId).exec()
+    .then(user => {
         if (!user.admin) return res.status(401).send('You must have admin rights.');
-        UsersGroup.find(function (err, groups) {
-            if (err) return res.status(500).send('There was a problem getting the groups.');
-            res.status(200).json(groups);
-        });
-    });
+        return UsersGroup.find().exec()
+    })
+    .then(groups => {return res.status(200).json(groups)})
+    .catch(_ => {return res.status(500).send('There was a problem getting the groups.')})
 });
 
 // GET AN USERSGROUP WITH ID
 // Access only granted to admins of the group and admin team.
 router.get('/:id', VerifyToken, function(req, res, next) {
-    User.findById(req.userId, function(err, user) {
-        if (err) return res.status(500).send('There was a problem getting the group.');
-        UsersGroup.findById(req.params.id, function (err, group) {
-            if (err) return res.status(500).send('There was a problem getting the group.');
-            if (!group) return res.status(404).send('This group does not exist.');
-            if (!(user.admin || group.listAdmin.indexOf(req.userId) > -1)) return res.status(401).send('You must be admin of the group.');
+    Promise.all([
+        User.findById(req.userId).exec(),
+        UsersGroup.findById(req.params.id).exec()
+    ])
+    .catch(_ => {return res.status(404).send('This group does not exist.')})
+    .then(result => {
+        [user, group] = result;
+        if (!(user.admin || group.listAdmin.indexOf(req.userId) > -1)) return res.status(401).send('You must be admin of the group.');
             res.status(200).json(group);
-        });
-    });
+    })
+    .catch(_ => {return res.status(500).send('There was a problem getting the group.')})
 });
 
 // CREATION OF AN USERSGROUP
@@ -40,84 +42,75 @@ router.get('/:id', VerifyToken, function(req, res, next) {
 // It has to provide a JSON with name, type and emails of the users. 
 // Creator is automaticly added to the group with admin rights.
 router.post('/', VerifyToken, function(req, res, next) {
-    User.find({email : {$in : req.body.emails}}, function (err, users) {
-        if (err) return res.status(500).send('There was a problem registering the group.');
+    User.find({email : {$in : req.body.emails}}).exec()
+    .then(users => {
         var listUser = users.map(x => String(x._id));
         if (listUser.indexOf(req.userId) === -1) listUser.push(req.userId);
         listUser = listUser.filter(function(item, pos) {return listUser.indexOf(item) == pos});
-        UsersGroup.create({
+        return UsersGroup.create({
             name: req.body.name,
             type: req.body.type,
             listUser: listUser,
             listAdmin: [req.userId],
             listRide: [],
             listVehicule: []
-        },
-        async function(err, group) {
-            if (err) return next(err);
-            if (err) return res.status(500).send('There was a problem registering the group.');
-            var proms = Promise.all(listUser.map(id => {
-                return new Promise((resolve, reject) => {
-                    User.findById(id, function (err, user) {
-                        if (err) reject();
-                        user.listUsersGroup.push(group._id);
-                        User.findByIdAndUpdate(id, user, function (err, res) {
-                            if (err) reject();
-                            resolve();
-                        });
-                    });
-    
-                })
-            }));
-            proms
-            .then(res.status(201).json({id: group._id, nbUsers: listUser.length, listUser: listUser}))
-            .catch(res.status(500).send('There was a problem registering the group.'))
-        });
-    });
+        })
+        .then(group => {return [listUser, group]});
+    })
+    .then(result => {
+        [listUser, group] = result;
+        res.status(201).json({id: group._id, nbUsers: listUser.length, listUser: listUser})
+        return Promise.all(listUser.map(id => {
+            return User.findById(id).exec()
+            .then(user => {
+                user.listUsersGroup.push(group._id);
+                return user.save()
+            })
+        }))
+    })
+    .catch(_ => {return res.status(500).send('There was a problem registering the group.')});
 });
+
 
 // ADD NEW MEMBERS TO AN USERSGROUP
 // Only admin of a group or admin team can do this.
 // It has to provide an emails list.
-router.post('/:id/adduser', VerifyToken, function(req, res, next) {
-    User.findById(req.userId, function(err, user) {
-        if (err) return res.status(500).send('There was a problem adding users.');
-        UsersGroup.findById(req.params.id, async function (err, group) {
-            if (err) return res.status(500).send('There was a problem adding users.');
-            if (!group) return res.status(404).send('This group does not exist.');
-            var cpt = 0;
-            if (!(user.admin || group.listAdmin.indexOf(req.userId) > -1)) return res.status(401).send('You must be admin of the group.');
-            const proms = Promise.all(req.body.emails.map(email => {
-                return new Promise((resolve, reject) => {
-                    User.findOne({email: email}, function (err, newuser) {
-                        if (err) reject(err);
-                        if (newuser && newuser.listUsersGroup.indexOf(group._id) == -1) {
-                            cpt++;
-                            newuser.listUsersGroup.push(group._id);
-                            User.findByIdAndUpdate(newuser.id, newuser, function (err, newuser) {
-                                if (err) reject(err);
-                                group.listUser.push(newuser._id);
-                                resolve();
-                            });
-                        }
-                        else resolve();
-                    });    
-                })
-            }));
-            proms
-            .catch(_ => {return res.status(500).send('There was a problem adding users.')})
-            .then(_ => {
-                group.listUser = group.listUser.filter(function(item, pos) {return group.listUser.indexOf(item) == pos});
-                UsersGroup.findByIdAndUpdate(group._id, group, function (err, newgroup) {
-                    if (err) return res.status(500).send('There was a problem adding users.');
-                    UsersGroup.findById(newgroup._id, function (err, group) {
-                        if (err) return res.status(500).send('There was a problem adding users.');
-                        res.status(200).json({id: group._id, modified: cpt, newListUser: group.listUser});
-                    })
-                });
-            });
-        });
-    });
+router.post('/:id/addusers', VerifyToken, function(req, res, next) {
+    Promise.all([
+        User.findById(req.userId).exec(),
+        UsersGroup.findById(req.params.id).exec()
+    ])
+    .then(result => {
+        [user, group] = result;
+        if (!group) return res.status(404).send('This group does not exist.');
+        if (!(user.admin || group.listAdmin.indexOf(req.userId) > -1)) return res.status(401).send('You must be admin of the group.');
+        return Promise.all(req.body.emails.map(email => {
+            return User.findOne({email: email}).exec()
+            .then(newuser => {
+                if (newuser) {
+                    if (newuser.listUsersGroup.indexOf(group._id) == -1) {
+                        newuser.listUsersGroup.push(group._id);
+                        return newuser.save();
+                    } else {
+                        return newuser;
+                    }
+                }
+            })
+            .catch(_ => {return res.status(500).send('There was a problem adding users.')});
+        }));
+    })
+    .then(result => {
+        const filteredResult = result.filter(x => x && x._id).map(x => String(x._id));
+        const cpt = filteredResult.length - group.listUser.length;
+        group.listUser = group.listUser.concat(filteredResult);
+        group.listUser = group.listUser.filter(function(item, pos) {return group.listUser.indexOf(item) == pos});
+        return group.save().then(newgroup => {return [newgroup, cpt]});
+    })
+    .then(result => {
+        [newgroup, cpt] = result;
+        return res.status(200).json({id: newgroup._id, modified: cpt, newListUser: newgroup.listUser});
+    })
+    .catch(_ => {return res.status(500).send('There was a problem adding users.')});
 });
 
 
