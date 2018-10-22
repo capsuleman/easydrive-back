@@ -14,7 +14,7 @@ router.post('/register', function (req, res) {
 
     User.find({email: req.body.email}, function(err, user) {
 
-        if (user.length !== 0) return res.status(409).send("email is already registered.");
+        if (user.length !== 0) return res.status(409).send('email is already registered.');
 
         var hashedPassword = bcrypt.hashSync(req.body.password, 8);
 
@@ -28,7 +28,7 @@ router.post('/register', function (req, res) {
             listRide: []
         },
             function (err, user) {
-                if (err) return res.status(500).send("There was a problem registering the user.")
+                if (err) return res.status(500).send('There was a problem registering the user.');
     
                 // create a token
                 var token = jwt.sign({ id: user._id }, config.cred.authsecret, {
@@ -45,8 +45,8 @@ router.post('/register', function (req, res) {
 router.get('/me', VerifyToken, function (req, res, next) {
 
     User.findById(req.userId, { password: 0 }, function (err, user) {
-        if (err) return res.status(500).send("There was a problem finding the user.");
-        if (!user) return res.status(404).send("No user found.");
+        if (err) return res.status(500).send('There was a problem finding the user.');
+        if (!user) return res.status(404).send('No user found.');
 
         res.status(200).send(user);
     });
@@ -76,7 +76,6 @@ router.post('/login', function (req, res) {
 
 router.post('/setadmin', VerifyToken, function(req, res, next) {
     if (!req.body.email) return res.status(418).send('Not email provided.');
-    console.log(req.userId);
     User.findById(req.userId, function(err, user) {
         if (!user) return res.status(401).render('resp', { message: '401 Unauthorized' });
         if (user.admin) {

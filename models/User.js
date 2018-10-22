@@ -23,7 +23,7 @@ var UserSchema = new mongoose.Schema({
     minlength: 8
   },
   admin: Boolean,
-  listGroupUsers: [String],
+  listUsersGroup: [String],
   listRide: [String]
   
 });
