@@ -11,7 +11,7 @@ var VerifyToken = require('../middleware/VerifyToken');
 
 // GET ALL USERSGROUPS
 // Access only granted to admin team.
-router.get('/', VerifyToken, function(req, res, next) {
+router.get('/', VerifyToken, function(req, res) {
     User.findById(req.userId).exec()
     .then(user => {
         if (!user.admin) return res.status(401).send('You must have admin rights.');
@@ -23,7 +23,7 @@ router.get('/', VerifyToken, function(req, res, next) {
 
 // GET AN USERSGROUP WITH ID
 // Access only granted to admins of the group and admin team.
-router.get('/:id', VerifyToken, function(req, res, next) {
+router.get('/:id', VerifyToken, function(req, res) {
     Promise.all([
         User.findById(req.userId).exec(),
         UsersGroup.findById(req.params.id).exec()
@@ -41,7 +41,7 @@ router.get('/:id', VerifyToken, function(req, res, next) {
 // Anybody can create a group.
 // It has to provide a JSON with name, type and emails of the users. 
 // Creator is automaticly added to the group with admin rights.
-router.post('/', VerifyToken, function(req, res, next) {
+router.post('/', VerifyToken, function(req, res) {
     User.find({email : {$in : req.body.emails}}).exec()
     .then(users => {
         var listUser = users.map(x => String(x._id));
@@ -75,7 +75,7 @@ router.post('/', VerifyToken, function(req, res, next) {
 // ADD NEW MEMBERS TO AN USERSGROUP
 // Only admin of a group or admin team can do this.
 // It has to provide an emails list.
-router.post('/:id/addusers', VerifyToken, function(req, res, next) {
+router.post('/:id/addusers', VerifyToken, function(req, res) {
     Promise.all([
         User.findById(req.userId).exec(),
         UsersGroup.findById(req.params.id).exec()
