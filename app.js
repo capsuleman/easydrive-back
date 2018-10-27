@@ -11,6 +11,8 @@ var indexRouter = require('./routes/index');
 var pushRouter = require('./routes/push');
 var authRouter = require('./routes/auth');
 var usersGroupRouter = require('./routes/usersgroup');
+var archiveRouter = require('./routes/archive');
+var dataRouter = require('./routes/data');
 
 var app = express();
 
@@ -28,6 +30,8 @@ app.use('/', indexRouter);
 app.use('/push', pushRouter);
 app.use('/auth', authRouter);
 app.use('/group', usersGroupRouter);
+app.use('/archive', archiveRouter);
+app.use('/data', dataRouter);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {

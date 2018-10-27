@@ -2,9 +2,7 @@ var express = require('express');
 var router = express.Router();
 var Archive = require('../models/Archive');
 var Data = require('../models/Data');
-var User = require('../models/User');
 var config = require('../config');
-var VerifyToken = require('../middleware/VerifyToken');
 
 
 router.post('/', function (req, res) {
@@ -41,32 +39,6 @@ router.post('/', function (req, res) {
     })
     .then(_ => {return res.status(200).send()})
     .catch(_ => {return res.status(500).send()});
-});
-
-router.get('/', VerifyToken, function(req, res, next) {
-    User.findById(req.userId).exec()
-    .then(user => {
-        if (!user.admin) return res.status(401).send('Only for admin team.');
-        return Archive.find().exec();
-    })
-    .then(data => {
-        res.status(200).json(data);
-    })
-    .catch(_ => {return res.status(500).send('Internal error.')});
-});
-  
-router.get('/:type', VerifyToken, function(req, res) {
-    if (['join', 'uplink', 'downlink'].indexOf(req.params.type) === -1) return res.status(404).send(`No data of type ${req.params.type}.`);
-    User.findById(req.userId).exec()
-    .then(user => {
-        if (!user.admin) return res.status(401).send('Only for admin team.');
-        return Archive.find({type: req.params.type}).exec();
-    })
-    .then(data => {
-        res.status(200).json(data);
-    })
-    .catch(_ => {return res.status(500).send('Internal error.')});
-
 });
   
 module.exports = router;
