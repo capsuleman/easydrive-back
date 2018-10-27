@@ -35,6 +35,7 @@ router.post('/', function (req, res) {
         };
         dataClear.antenaId = data.device_id;
         dataClear.date = data.timestamp;
+        dataClear.archive = data._id;
 
         return Data.create(dataClear);
     })
@@ -45,27 +46,27 @@ router.post('/', function (req, res) {
 router.get('/', VerifyToken, function(req, res, next) {
     User.findById(req.userId).exec()
     .then(user => {
-        console.log(user);
-        if (!user.admin) return res.status(401).send('Only for admin team');
+        if (!user.admin) return res.status(401).send('Only for admin team.');
         return Archive.find().exec();
     })
     .then(data => {
         res.status(200).json(data);
-    });
+    })
+    .catch(_ => {return res.status(500).send('Internal error.')});
 });
   
-router.get('/:type', VerifyToken, function(req, res, next) {
-    if (!(req.params.type in ['join', 'uplink', 'downlink'])) return res.status(404).render('resp', { message: '404 Not found' });
-    User.findById(req.userId, function(err, user) {
-        if (user.admin) {
-            Archive.find({type: req.params.type}, function (err, data) {
-                if (err) return next(err);
-                res.status(200).json(data);
-            });
-        } else {
-            res.status(401).render('resp', { message: '401 Unauthorized' });
-        };
-    });
+router.get('/:type', VerifyToken, function(req, res) {
+    if (['join', 'uplink', 'downlink'].indexOf(req.params.type) === -1) return res.status(404).send(`No data of type ${req.params.type}.`);
+    User.findById(req.userId).exec()
+    .then(user => {
+        if (!user.admin) return res.status(401).send('Only for admin team.');
+        return Archive.find({type: req.params.type}).exec();
+    })
+    .then(data => {
+        res.status(200).json(data);
+    })
+    .catch(_ => {return res.status(500).send('Internal error.')});
+
 });
   
 module.exports = router;
