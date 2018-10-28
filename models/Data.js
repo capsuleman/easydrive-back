@@ -9,8 +9,9 @@ var DataSchema = new mongoose.Schema({
     mafFlow: [Number],
     AccMaxXY: [Number],
     lacetMax: [Number],
-    antenaId: Number,
-    date: String
+    antenna: Number,
+    date: String,
+    archive: String
 });
 
 module.exports = mongoose.model('Data', DataSchema);

@@ -3,6 +3,7 @@ var router = express.Router();
 var Archive = require('../models/Archive');
 var Data = require('../models/Data');
 var config = require('../config');
+var https = require('https');
 
 
 router.post('/', function (req, res) {
@@ -31,14 +32,47 @@ router.post('/', function (req, res) {
             dataClear.AccMaxXY.push(parseInt(payload.substring(46 + 2*i, 48 + 2*i), 16));
             dataClear.lacetMax.push(parseInt(payload.substring(56 + 2*i, 58 + 2*i), 16));
         };
-        dataClear.antenaId = data.device_id;
+        dataClear.antenna = data.device_id;
         dataClear.date = data.timestamp;
         dataClear.archive = data._id;
+        console.log(1, dataClear);
 
         return Data.create(dataClear);
     })
-    .then(_ => {return res.status(200).send()})
-    .catch(_ => {return res.status(500).send()});
+    .then(data => {
+        console.log(2, data);
+        if (data) sendDataToEasyBot(data);
+        return res.status(200).send();
+    })
+    .catch(err => {
+        sendDataToEasyBot(err);
+        return res.status(500).send();
+    });
 });
-  
+
+function sendDataToEasyBot(data) {
+    config.tg.chatIDs.map(function(chatID) {
+        var body = {
+            'chat_id': chatID,
+            'text': JSON.stringify(data, null, '\t'),
+
+        }
+        body = JSON.stringify(body);
+        var options = {
+            host: 'api.telegram.org',
+            path: '/bot'+config.tg.token+'/sendMessage',
+            port: 443,
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Content-Length': Buffer.byteLength(body)
+            }
+        };
+        request = https.request(options);
+
+        request.write(body);
+        request.end();
+    })
+}
+
 module.exports = router;
