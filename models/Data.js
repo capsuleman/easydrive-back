@@ -1,16 +1,17 @@
 var mongoose = require('mongoose');
 
 var DataSchema = new mongoose.Schema({
+    sentDate: Date,
+    recepDate: Date,
     lat: Number,
     long: Number,
     speed: [Number],
     rpm: [Number],
     engineLoad: [Number],
-    mafFlow: [Number],
-    AccMaxXY: [Number],
+    accMaxXY: [Number],
     lacetMax: [Number],
+    timestamp: [Date],
     antenna: Number,
-    date: String,
     archive: String
 });
 
