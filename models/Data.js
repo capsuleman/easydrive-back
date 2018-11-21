@@ -12,6 +12,7 @@ var DataSchema = new mongoose.Schema({
     lacetMax: [Number],
     timestamp: [Date],
     antenna: Number,
+    ride: String,
     archive: String
 });
 

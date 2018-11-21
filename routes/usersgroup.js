@@ -53,7 +53,8 @@ router.post('/', VerifyToken, function(req, res) {
             listUser: listUser,
             listAdmin: [req.userId],
             listRide: [],
-            listVehicule: []
+            listVehicule: [],
+            listAntenna: []
         })
         .then(group => {return [listUser, group]});
     })
@@ -113,5 +114,39 @@ router.post('/:id/addusers', VerifyToken, function(req, res) {
     .catch(_ => {return res.status(500).send('There was a problem adding users.')});
 });
 
+
+//ADD ANTENNA TO USERGROUP
+// Only admin of a group or admin team can do this.
+// It had to provide device id.
+router.post('/:id/adddevice', VerifyToken, function(req, res) {
+    Promise.all([
+        User.findById(req.userId).exec(),
+        UsersGroup.findById(req.params.id).exec(),
+        UsersGroup.findOne({ listAntenna: {$all: [req.body.device] }})
+    ])
+    .then(result => {
+        [user, group, already] = result;
+        if (already) throw ('antennaAlreadyExists')
+        if (!group) throw('groupDoesNotExist');
+        if (!(user.admin || group.listAdmin.indexOf(req.userId) > -1)) throw('needAdminRights');
+        if (!req.body.device) throw('noAntenna');
+        if (group.listAntenna.indexOf(req.body.device) === -1) {
+            group.listAntenna.push(req.body.device);
+            return group.save();
+        } else {
+            return group;
+        }
+    })
+    .then(newgroup => {
+        return res.status(200).json({devices: newgroup.listAntenna, nbDevice: newgroup.listAntenna.length});
+    })
+    .catch(err => {
+        if (err == 'antennaAlreadyExists') return res.status(409).send('This device belongs to another group.')
+        if (err == 'groupDoesNotExist') return res.status(404).send('This group does not exist.');
+        if (err == 'needAdminRights') return res.status(401).send('You must be admin of the group.');
+        if (err == 'noAntenna') return res.status(400).send('You must provide an antenna id.');
+        res.status(500);
+    });
+});
 
 module.exports = router;

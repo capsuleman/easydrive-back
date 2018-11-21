@@ -1,4 +1,5 @@
 var mongoose = require('mongoose');  
+
 var UsersGroupSchema = new mongoose.Schema({  
   name: {
     type: String,
@@ -14,7 +15,8 @@ var UsersGroupSchema = new mongoose.Schema({
   listAdmin: [String],
   listUser: [String],
   listRide: [String],
-  listVehicule: [String]
+  listVehicule: [String],
+  listAntenna: [String]
   
 });
 mongoose.model('UsersGroup', UsersGroupSchema);

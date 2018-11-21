@@ -16,7 +16,7 @@ var VerifyToken = require('../middleware/VerifyToken');
 router.post('/register', function (req, res) {
     User.findOne({email: req.body.email}).exec()
     .then(user => {
-        if (user) return res.status(409).send('email is already registered.');
+        if (user) throw 'alreadyRegistered';
         var hashedPassword = bcrypt.hashSync(req.body.password, 8);
         return User.create({
             firstName: req.body.firstName,
@@ -34,7 +34,9 @@ router.post('/register', function (req, res) {
         });
         return res.status(201).send({ auth: true, token: token });
     })
-    .catch(_ => {return res.status(500).send('There was a problem registering the user.')})
+    .catch(err => {
+        if (err == 'alreadyRegistered') return res.status(409).send('email is already registered.');
+        return res.status(500).send('There was a problem registering the user.')})
 });
 
 // ACCESS TO USER INFORMATION

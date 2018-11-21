@@ -1,4 +1,5 @@
-var mongoose = require('mongoose');  
+var mongoose = require('mongoose');
+
 var UserSchema = new mongoose.Schema({  
   firstName: {
     type: String,
@@ -27,6 +28,5 @@ var UserSchema = new mongoose.Schema({
   listRide: [String]
   
 });
-mongoose.model('User', UserSchema);
 
-module.exports = mongoose.model('User');
+module.exports = mongoose.model('User', UserSchema);

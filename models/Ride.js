@@ -5,9 +5,8 @@ var RideSchema = new mongoose.Schema({
   antenna: String,
   groupUser: String,
   user: String,
-  firstData: String
+  firstData: String,
+  begin: Date
   
 });
-mongoose.model('RideSchema', RideSchema);
-
-module.exports = mongoose.model('RideSchema');
+module.exports = mongoose.model('Ride', RideSchema);
