@@ -45,9 +45,9 @@ router.get('/me', VerifyToken, function (req, res) {
     User.findById(req.userId, { password: 0 }).exec()
     .then(user => {
         if (!user) return res.status(404).send('No user found.');
-        res.status(200).send(user);
+        return res.status(200).send(user);
     })
-    .catch(_ => {return res.status(500).send('There was a problem finding the user.')});
+    .catch(_ => {console.log(err);return res.status(500).send('There was a problem finding the user.')});
 });
 
 // LOGIN ROUTE
@@ -56,7 +56,7 @@ router.get('/me', VerifyToken, function (req, res) {
 router.post('/login', function (req, res) {
     User.findOne({ email: req.body.email }).exec()
     .then(user => {
-        if (!user) return res.status(404).send('No user found.');
+        if (!user) return res.status(401).send({ auth: false, token: null });
 
         var passwordIsValid = bcrypt.compareSync(req.body.password, user.password);
         if (!passwordIsValid) return res.status(401).send({ auth: false, token: null });
