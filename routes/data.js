@@ -17,7 +17,7 @@ router.get('/:id', VerifyAdmin, function(req, res) {
     if (!req.isAdmin) return res.status(401).send('You must be admin of the data.');
     Data.findById(req.params.id).exec()
     .catch(_ => {return res.status(404).send('This data does not exist.')})
-    .then(result => {
+    .then(data => {
         res.status(200).json(data);
     })
     .catch(_ => {return res.status(500).send('There was a problem getting the data.')})
