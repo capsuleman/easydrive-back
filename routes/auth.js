@@ -47,7 +47,7 @@ router.get('/me', VerifyToken, function (req, res) {
         if (!user) return res.status(404).send('No user found.');
         return res.status(200).send(user);
     })
-    .catch(_ => {console.log(err);return res.status(500).send('There was a problem finding the user.')});
+    .catch(_ => {return res.status(500).send('There was a problem finding the user.')});
 });
 
 // LOGIN ROUTE
